@@ -18,28 +18,7 @@ jobs:
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
       jwtSecret: ${{ secrets.JWT_SECRET }} #github secret
  
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16.x"
-      - run: |
-          npm i -D typescript ts-loader webpack webpack-cli
-          cd api && npm ci
-          # tsc
-          cd ..
-          mkdir zip
-          zip -r zip/api.zip api
-        env:
-          CI: true
-      - name: Push Zip to S3
-        uses: jakejarvis/s3-sync-action@v0.3.1
-        env:
-          SOURCE_DIR: "./zip"
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
- 
+    steps: 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
  
