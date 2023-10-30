@@ -2,18 +2,34 @@ resource "aws_ecs_cluster" "order_cluster" {
   name = var.order_cluster_name
 }
 
-resource "aws_default_vpc" "default_vpc" {}
-
-resource "aws_default_subnet" "default_subnet_a" {
+resource "aws_subnet" "orderPublicSubnet1" {
+  vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
+  cidr_block        = var.public_subnet_cidrs[0]
   availability_zone = var.availability_zones[0]
+  tags = {
+    Name    = "orderPublicSubnet1"
+    Project = "Order TF"
+  }
 }
 
-resource "aws_default_subnet" "default_subnet_b" {
+resource "aws_subnet" "orderPublicSubnet2" {
+  vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
+  cidr_block        = var.public_subnet_cidrs[1]
   availability_zone = var.availability_zones[1]
+  tags = {
+    Name    = "orderPublicSubnet2"
+    Project = "Order TF"
+  }
 }
 
-resource "aws_default_subnet" "default_subnet_c" {
+resource "aws_subnet" "orderPublicSubnet3" {
+  vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
+  cidr_block        = var.public_subnet_cidrs[2]
   availability_zone = var.availability_zones[2]
+  tags = {
+    Name    = "orderPublicSubnet3"
+    Project = "Order TF"
+  }
 }
 
 resource "aws_ecs_task_definition" "order_task" {
@@ -22,7 +38,7 @@ resource "aws_ecs_task_definition" "order_task" {
   [
     {
       "name": "${var.order_task_name}",
-      "image": "${var.ecr_repo_url}",
+      "image": "${var.ecr_repo_url}:latest",
       "essential": true,
       "portMappings": [
         {
@@ -56,14 +72,17 @@ resource "aws_alb" "application_load_balancer" {
   name               = var.application_load_balancer_name
   load_balancer_type = "application"
   subnets = [
-    "${aws_default_subnet.default_subnet_a.id}",
-    "${aws_default_subnet.default_subnet_b.id}",
-    "${aws_default_subnet.default_subnet_c.id}"
+    "${aws_subnet.orderPublicSubnet1.id}",
+    "${aws_subnet.orderPublicSubnet2.id}",
+    "${aws_subnet.orderPublicSubnet3.id}"
   ]
   security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
 }
 
 resource "aws_security_group" "load_balancer_security_group" {
+  name        = "security_group_lb"
+  description = "Security Group LB"
+  vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
   ingress {
     from_port   = 80
     to_port     = 80
@@ -77,6 +96,11 @@ resource "aws_security_group" "load_balancer_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name    = "orderSecurityGroup"
+    Project = "Order TF"
+  }
 }
 
 resource "aws_lb_target_group" "target_group" {
@@ -84,7 +108,7 @@ resource "aws_lb_target_group" "target_group" {
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_default_vpc.default_vpc.id
+  vpc_id      = data.aws_vpc.order-soat-instance-vpc.id
 }
 
 resource "aws_lb_listener" "listener" {
@@ -111,13 +135,14 @@ resource "aws_ecs_service" "order_service" {
   }
 
   network_configuration {
-    subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}", "${aws_default_subnet.default_subnet_c.id}"]
+    subnets          = ["${aws_subnet.orderPublicSubnet1.id}", "${aws_subnet.orderPublicSubnet2.id}", "${aws_subnet.orderPublicSubnet3.id}"]
     assign_public_ip = true
     security_groups  = ["${aws_security_group.service_security_group.id}"]
   }
 }
 
 resource "aws_security_group" "service_security_group" {
+  vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
   ingress {
     from_port       = 0
     to_port         = 0

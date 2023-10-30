@@ -8,3 +8,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
     }
   }
 }
+
+data "aws_vpc" "order-soat-instance-vpc" {
+  id = "vpc-0ca8480194af97d19"
+}

@@ -3,6 +3,11 @@ variable "order_cluster_name" {
   type        = string
 }
 
+variable "public_subnet_cidrs" {
+  description = "CIDRs for Public Subnets"
+  type        = list(string)
+}
+
 variable "availability_zones" {
   description = "us-east-1 AZs"
   type        = list(string)
