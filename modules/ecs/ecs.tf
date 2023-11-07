@@ -6,6 +6,7 @@ resource "aws_subnet" "orderPublicSubnet1" {
   vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
   cidr_block        = var.public_subnet_cidrs[0]
   availability_zone = var.availability_zones[0]
+  map_public_ip_on_launch  = true
   tags = {
     Name    = "orderPublicSubnet1"
     Project = "Order TF"
@@ -16,6 +17,7 @@ resource "aws_subnet" "orderPublicSubnet2" {
   vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
   cidr_block        = var.public_subnet_cidrs[1]
   availability_zone = var.availability_zones[1]
+  map_public_ip_on_launch  = true
   tags = {
     Name    = "orderPublicSubnet2"
     Project = "Order TF"
@@ -26,6 +28,7 @@ resource "aws_subnet" "orderPublicSubnet3" {
   vpc_id            = data.aws_vpc.order-soat-instance-vpc.id
   cidr_block        = var.public_subnet_cidrs[2]
   availability_zone = var.availability_zones[2]
+  map_public_ip_on_launch  = true
   tags = {
     Name    = "orderPublicSubnet3"
     Project = "Order TF"
@@ -46,14 +49,40 @@ resource "aws_ecs_task_definition" "order_task" {
           "hostPort": ${var.container_port}
         }
       ],
-      "memory": 512,
-      "cpu": 256
+      "memory": 2048,
+      "cpu": 256,
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "POSTGRES_HOST",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "POSTGRES_DB",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "postgres"
+        }
+      ]
     }
   ]
   DEFINITION
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  memory                   = 512
+  memory                   = 2048
   cpu                      = 256
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 }
@@ -130,7 +159,7 @@ resource "aws_ecs_service" "order_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = aws_ecs_task_definition.order_task.family
+    container_name   = var.order_task_name
     container_port   = var.container_port
   }
 

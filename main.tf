@@ -9,11 +9,11 @@ terraform {
   }
 }
 
-module "ecrRepo" {
-  source = "./modules/ecr"
+# module "ecrRepo" {
+#   source = "./modules/ecr"
 
-  ecr_repo_name = local.ecr_repo_name
-}
+#   ecr_repo_name = local.ecr_repo_name
+# }
 
 module "ecsCluster" {
   source = "./modules/ecs"
@@ -23,7 +23,7 @@ module "ecsCluster" {
   public_subnet_cidrs = local.public_subnet_cidrs
 
   order_task_famliy            = local.order_task_famliy
-  ecr_repo_url                 = module.ecrRepo.repository_url
+  ecr_repo_url                 = local.ecr_repo_url
   container_port               = local.container_port
   order_task_name              = local.order_task_name
   ecs_task_execution_role_name = local.ecs_task_execution_role_name

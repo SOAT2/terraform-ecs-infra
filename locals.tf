@@ -4,9 +4,10 @@ locals {
   ecr_repo_name = "order-ecr"
 
   order_cluster_name = "order-cluster"
-  // ecr_repo_url  = "882732830129.dkr.ecr.us-east-1.amazonaws.com/apieventos"
+
+  ecr_repo_url                 = "882732830129.dkr.ecr.us-east-1.amazonaws.com/order-ecr"
   availability_zones           = ["us-east-1c", "us-east-1d", "us-east-1e"]
-  order_task_famliy            = "order-task"
+  order_task_famliy            = "order-family"
   container_port               = 3000
   order_task_name              = "order-task"
   ecs_task_execution_role_name = "order-task-execution-role"
